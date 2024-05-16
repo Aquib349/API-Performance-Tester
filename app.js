@@ -49,15 +49,13 @@ app.post("/api/performance", async (req, res, next) => {
     //   browserWSEndpoint: `${websocketURL}`,
     // });
 
-    browser = await puppeteer.launch(
-      (browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
-        ignoreHTTPSErrors: true,
-      }))
-    );
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
+    });
 
     // Retrieve pages from the connected browser
     const pages = await Promise.all(urls.map((urlObject) => browser.newPage()));
@@ -70,7 +68,7 @@ app.post("/api/performance", async (req, res, next) => {
         });
 
         // Extract page title
-        const title = await page.title();
+        title = await page.title();
 
         // Measure performance metrics
         const timing = await page.evaluate(() => {
