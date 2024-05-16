@@ -1,17 +1,23 @@
 const express = require("express");
 const cors = require("cors");
-// const puppeteer = require("puppeteer");
-// const { defaultViewport, executablePath, headless } = require("chrome-aws-lambda");
+const puppeteer_core = require("puppeteer-core");
+const chrome = require("chrome-aws-lambda");
+const puppeteer = require("puppeteer");
+const {
+  defaultViewport,
+  executablePath,
+  headless,
+} = require("chrome-aws-lambda");
 const app = express();
 
-let chrome = {};
-let puppeteer;
+// let chrome = {};
+// let puppeteer;
 
 if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-  chrome = require("chrome-aws-lambda");
-  puppeteer = require("puppeteer-core");
+  chrome;
+  puppeteer_core;
 } else {
-  puppeteer = require("puppeteer");
+  puppeteer;
 }
 
 app.use(cors());
@@ -25,7 +31,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/api/performance", async (req, res) => {
+app.post("/api/performance", async (req, res, next) => {
   let options = {};
   if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
     options = {
@@ -45,7 +51,7 @@ app.post("/api/performance", async (req, res) => {
     // const browser = await puppeteer.connect({
     //   browserWSEndpoint: `${websocketURL}`,
     // });
-    const browser = await puppeteer.launch({
+    const browser = await (puppeteer ? puppeteer : puppeteer_core).launch({
       headless: false,
     });
 
@@ -86,8 +92,13 @@ app.post("/api/performance", async (req, res) => {
     res.json(performanceData);
   } catch (error) {
     console.error("Error occurred while processing URLs:", error);
-    res.status(500).json(error);
+    next(error);
   }
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send(err.stack);
 });
 
 // Start the server
