@@ -1,10 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const {
-  defaultViewport,
-  executablePath,
-  headless,
-} = require("chrome-aws-lambda");
+const { defaultViewport, executablePath, headless } = require("chrome-aws-lambda");
 const app = express();
 
 let chrome = {};
@@ -43,12 +39,12 @@ app.post("/api/performance", async (req, res) => {
   const { urls, websocketURL } = req.body;
   const performanceData = [];
 
-  // Connect to an existing instance of a Puppeteer-controlled browser
-  const browser = await puppeteer.connect({
-    browserWSEndpoint: `${websocketURL}`,
-  });
-
   try {
+    // Connect to an existing instance of a Puppeteer-controlled browser
+    const browser = await puppeteer.connect({
+      browserWSEndpoint: `${websocketURL}`,
+    });
+
     // Retrieve pages from the connected browser
     const pages = await Promise.all(urls.map((urlObject) => browser.newPage()));
 
@@ -79,17 +75,19 @@ app.post("/api/performance", async (req, res) => {
         });
       })
     );
+
+    // Disconnect from the browser
+    await browser.disconnect();
+
+    res.json(performanceData);
   } catch (error) {
     console.error("Error occurred while processing URLs:", error);
     res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    // Disconnect from the browser
-    await browser.disconnect();
-    res.json(performanceData);
   }
 });
 
 // Start the server
-app.listen(process.env.PORT || 5000, () => {
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
