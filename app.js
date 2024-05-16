@@ -48,12 +48,12 @@ app.post("/api/performance", async (req, res, next) => {
 
   try {
     // Connect to an existing instance of a Puppeteer-controlled browser
-    // const browser = await puppeteer.connect({
-    //   browserWSEndpoint: `${websocketURL}`,
-    // });
-    const browser = await (puppeteer ? puppeteer : puppeteer_core).launch({
-      headless: false,
+    const browser = await puppeteer.connect({
+      browserWSEndpoint: `${websocketURL}`,
     });
+    // const browser = await (puppeteer ? puppeteer : puppeteer_core).launch({
+    //   headless: false,
+    // });
 
     // Retrieve pages from the connected browser
     const pages = await Promise.all(urls.map((urlObject) => browser.newPage()));
