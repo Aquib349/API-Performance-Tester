@@ -12,7 +12,6 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "puppeteer": "^22.8.1",
-    "puppeteer-cluster": "^0.24.0"
+    "puppeteer": "^22.8.1"
   }
 }
