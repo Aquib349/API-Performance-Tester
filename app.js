@@ -48,7 +48,7 @@ app.post("/api/performance", async (req, res, next) => {
 
   try {
     // Connect to an existing instance of a Puppeteer-controlled browser
-    const browser = await puppeteer.connect({
+    const browser = await (puppeteer ? puppeteer : puppeteer_core).connect({
       browserWSEndpoint: `${websocketURL}`,
     });
     // const browser = await (puppeteer ? puppeteer : puppeteer_core).launch({
