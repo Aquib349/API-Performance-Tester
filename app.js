@@ -83,7 +83,7 @@ app.post("/api/performance", async (req, res) => {
     res.json(performanceData);
   } catch (error) {
     console.error("Error occurred while processing URLs:", error);
-    res.status(500).json({ error });
+    res.status(500).json(error);
   }
 });
 
