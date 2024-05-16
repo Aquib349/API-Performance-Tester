@@ -1,9 +1,21 @@
-const puppeteer = require("puppeteer");
 const express = require("express");
 const cors = require("cors");
-
+const {
+  defaultViewport,
+  executablePath,
+  headless,
+} = require("chrome-aws-lambda");
 const app = express();
-const PORT = process.env.PORT || 5000;
+
+let chrome = {};
+let puppeteer;
+
+if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+  chrome = require("chrome-aws-lambda");
+  puppeteer = require("puppeteer-core");
+} else {
+  puppeteer = require("puppeteer");
+}
 
 app.use(cors());
 app.use(express.json());
@@ -17,6 +29,17 @@ app.use((req, res, next) => {
 });
 
 app.post("/api/performance", async (req, res) => {
+  let options = {};
+  if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+    options = {
+      args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
+      defaultViewport: chrome.defaultViewport,
+      executablePath: await chrome.executablePath,
+      headless: true,
+      ignoreHTTPSErrors: true,
+    };
+  }
+
   const { urls, websocketURL } = req.body;
   const performanceData = [];
 
@@ -67,6 +90,6 @@ app.post("/api/performance", async (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(process.env.PORT || 5000, () => {
   console.log(`Server running on port ${PORT}`);
 });
