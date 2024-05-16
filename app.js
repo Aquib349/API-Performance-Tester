@@ -1,24 +1,19 @@
 const express = require("express");
+const puppeteer = require("puppeteer-core");
+const chromium = require("@sparticuz/chromium");
 const cors = require("cors");
-const puppeteer_core = require("puppeteer-core");
-const chrome = require("chrome-aws-lambda");
-const puppeteer = require("puppeteer");
-const {
-  defaultViewport,
-  executablePath,
-  headless,
-} = require("chrome-aws-lambda");
+// const puppeteer = require("puppeteer");
 const app = express();
 
 // let chrome = {};
 // let puppeteer;
 
-if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-  chrome;
-  puppeteer_core;
-} else {
-  puppeteer;
-}
+// if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+//   chrome;
+//   puppeteer_core;
+// } else {
+//   puppeteer;
+// }
 
 app.use(cors());
 app.use(express.json());
@@ -32,28 +27,37 @@ app.use((req, res, next) => {
 });
 
 app.post("/api/performance", async (req, res, next) => {
-  let options = {};
-  if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-    options = {
-      args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
-      defaultViewport: chrome.defaultViewport,
-      executablePath: await chrome.executablePath,
-      headless: true,
-      ignoreHTTPSErrors: true,
-    };
-  }
+  // let options = {};
+  // if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+  //   options = {
+  //     args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
+  //     defaultViewport: chrome.defaultViewport,
+  //     executablePath: await chrome.executablePath,
+  //     headless: true,
+  //     ignoreHTTPSErrors: true,
+  //   };
+  // }
 
   const { urls, websocketURL } = req.body;
   const performanceData = [];
+  let result = null;
+  let browser = null;
 
   try {
     // Connect to an existing instance of a Puppeteer-controlled browser
-    const browser = await (puppeteer ? puppeteer : puppeteer_core).connect({
-      browserWSEndpoint: `${websocketURL}`,
-    });
-    // const browser = await (puppeteer ? puppeteer : puppeteer_core).launch({
-    //   headless: false,
+    // const browser = await puppeteer.connect({
+    //   browserWSEndpoint: `${websocketURL}`,
     // });
+
+    browser = await puppeteer.launch(
+      (browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
+      }))
+    );
 
     // Retrieve pages from the connected browser
     const pages = await Promise.all(urls.map((urlObject) => browser.newPage()));
